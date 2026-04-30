@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caja Digital - Dark Style</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --accent: #00b894;
+            --yape: #6c5ce7;
+            --text: #e0e0e0;
+            --border: #333;
+            --danger: #ff7675;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
+        .container { max-width: 500px; margin: auto; }
+        
+        h2, h3 { color: var(--accent); margin: 10px 0; text-align: center; }
+
+        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        /* Estilo de Platos */
+        .grid-productos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .item-box { background: #252525; border-radius: 12px; padding: 10px; display: flex; align-items: center; border: 1px solid #333; }
+        .info-btn { flex: 1; background: none; border: none; color: white; cursor: pointer; text-align: left; padding: 5px; }
+        .info-btn b { display: block; font-size: 0.9em; }
+        .info-btn span { font-size: 0.75em; color: #888; }
+        .btn-qty { width: 28px; height: 28px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .minus { background: #444; color: white; }
+        .plus { background: var(--accent); color: #121212; }
+        .qty-num { margin: 0 8px; font-weight: bold; min-width: 15px; text-align: center; color: var(--accent); }
+
+        /* Preview del pedido */
+        .preview-bar { background: #2d3436; padding: 12px; border-radius: 10px; margin: 15px 0; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+
+        /* Métodos de pago */
+        .pay-grid { display: flex; gap: 10px; margin-bottom: 15px; }
+        .pay-btn { flex: 1; padding: 12px; border: 1px solid #444; border-radius: 10px; background: #252525; color: white; font-weight: bold; cursor: pointer; }
+        .pay-btn.active.efectivo { border-color: var(--accent); color: var(--accent); background: rgba(0, 184, 148, 0.1); }
+        .pay-btn.active.yape { border-color: var(--yape); color: var(--yape); background: rgba(108, 92, 231, 0.1); }
+
+        .btn-main { width: 100%; padding: 18px; background: var(--accent); color: #121212; border: none; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+
+        /* Gastos */
+        .gasto-input { display: flex; gap: 5px; margin-top: 10px; }
+        input { background: #252525; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; }
+
+        /* Resumen */
+        .resumen-scroll { max-height: 250px; overflow-y: auto; font-size: 0.9em; }
+        .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #333; }
+        .total-final { font-size: 1.5em; text-align: right; margin-top: 15px; color: var(--accent); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <input type="date" id="fecha" style="width: 100%; margin-bottom: 15px;" onchange="cargarDatos()">
+        
+        <div class="grid-productos" id="platos-ui"></div>
+
+        <button onclick="adicionalPrompt()" style="width:100%; margin-top:10px; background:none; border:1px dashed #555; color:#888; padding:8px; border-radius:8px; cursor:pointer;">+ Agregar Adicional S/</button>
+
+        <div class="preview-bar">
+            <span>Total Pedido:</span>
+            <span id="pedido-total">S/ 0.00</span>
+        </div>
+
+        <div class="pay-grid">
+            <button class="pay-btn efectivo active" id="btn-efec" onclick="setMetodo('Efectivo')">EFECTIVO</button>
+            <button class="pay-btn yape" id="btn-yape" onclick="setMetodo('Yape')">YAPE</button>
+        </div>
+
+        <button class="btn-main" onclick="registrar()">REGISTRAR PEDIDO</button>
+        <button onclick="deshacer()" id="undo" style="display:none; width:100%; margin-top:8px; background:none; border:none; color:var(--danger); cursor:pointer;">↩ Deshacer último error</button>
+    </div>
+
+    <div class="card">
+        <h3>Reporte Consolidado</h3>
+        <div id="reporte-lista" class="resumen-scroll"></div>
+        <hr style="border: 0.5px solid #333; margin: 15px 0;">
+        <div class="row"><span>Efectivo:</span><span id="res-efec">S/ 0.00</span></div>
+        <div class="row"><span>Yape:</span><span id="res-yape">S/ 0.00</span></div>
+        <div class="row" style="color:var(--danger)"><span>Gastos:</span><span id="res-gastos">S/ 0.00</span></div>
+        <div class="total-final" id="res-total">S/ 0.00</div>
+    </div>
+
+    <div class="card">
+        <h3>Registrar Gasto</h3>
+        <div class="gasto-input">
+            <input type="text" id="g-nombre" placeholder="¿En qué?" style="flex:2">
+            <input type="number" id="g-monto" placeholder="S/" style="flex:1">
+            <button onclick="addGasto()" style="background:var(--danger); border:none; color:white; padding:10px; border-radius:8px; cursor:pointer;">OK</button>
+        </div>
+        <div id="gasto-lista" style="font-size:0.8em; margin-top:10px; color:#888"></div>
+    </div>
+</div>
+
+<script>
+    const productos = [
+        { id: 'p1', n: "Ejecutivo", p: 16 }, { id: 'p2', n: "Económico 14", p: 14 },
+        { id: 'p3', n: "Económico 13", p: 13 }, { id: 'p4', n: "Económico 12", p: 12 },
+        { id: 'p5', n: "2do Solo 15", p: 15 }, { id: 'p6', n: "2do Solo 13", p: 13 },
+        { id: 'p7', n: "2do Solo 12", p: 12 }, { id: 'p8', n: "Entrada 4", p: 4 }
+    ];
+
+    let state = { seleccion: {}, acumulado: {}, efec: 0, yape: 0, gastos: [], last: null };
+    let metodoActual = 'Efectivo';
+
+    document.getElementById('fecha').valueAsDate = new Date();
+
+    function init() {
+        const ui = document.getElementById('platos-ui');
+        productos.forEach(p => {
+            state.seleccion[p.id] = 0;
+            ui.innerHTML += `
+                <div class="item-box">
+                    <button class="info-btn" onclick="updateQty('${p.id}', 1)"><b>${p.n}</b><span>S/ ${p.p}</span></button>
+                    <button class="btn-qty minus" onclick="updateQty('${p.id}', -1)">-</button>
+                    <span class="qty-num" id="q-${p.id}">0</span>
+                    <button class="btn-qty plus" onclick="updateQty('${p.id}', 1)">+</button>
+                </div>`;
+        });
+        cargarDatos();
+    }
+
+    function updateQty(id, val) {
+        state.seleccion[id] = Math.max(0, state.seleccion[id] + val);
+        document.getElementById(`q-${id}`).innerText = state.seleccion[id];
+        calcPreview();
+    }
+
+    function calcPreview() {
+        let total = 0;
+        productos.forEach(p => total += state.seleccion[p.id] * p.p);
+        document.getElementById('pedido-total').innerText = `S/ ${total.toFixed(2)}`;
+    }
+
+    function setMetodo(m) {
+        metodoActual = m;
+        document.getElementById('btn-efec').className = 'pay-btn efectivo' + (m==='Efectivo'?' active':'');
+        document.getElementById('btn-yape').className = 'pay-btn yape' + (m==='Yape'?' active':'');
+    }
+
+    function registrar() {
+        let pedidoItems = [];
+        let subtotal = 0;
+        productos.forEach(p => {
+            if(state.seleccion[p.id] > 0) {
+                pedidoItems.push({ n: p.n, q: state.seleccion[p.id], p: p.p });
+                subtotal += state.seleccion[p.id] * p.p;
+                state.acumulado[p.n] = (state.acumulado[p.n] || 0) + state.seleccion[p.id];
+                state.seleccion[p.id] = 0; document.getElementById(`q-${p.id}`).innerText = 0;
+            }
+        });
+        if(pedidoItems.length === 0) return;
+        
+        if(metodoActual === 'Efectivo') state.efec += subtotal; else state.yape += subtotal;
+        state.last = { items: pedidoItems, sub: subtotal, met: metodoActual };
+        document.getElementById('undo').style.display = 'block';
+        save();
+    }
+
+    function adicionalPrompt() {
+        const m = parseFloat(prompt("Monto del adicional:"));
+        if(!isNaN(m)) {
+            if(metodoActual === 'Efectivo') state.efec += m; else state.yape += m;
+            state.acumulado["Adicionales"] = (state.acumulado["Adicionales"] || 0) + m;
+            save();
+        }
+    }
+
+    function addGasto() {
+        const n = document.getElementById('g-nombre').value;
+        const m = parseFloat(document.getElementById('g-monto').value);
+        if(n && m) {
+            state.gastos.push({ n, m });
+            document.getElementById('g-nombre').value = '';
+            document.getElementById('g-monto').value = '';
+            save();
+        }
+    }
+
+    function save() {
+        const fecha = document.getElementById('fecha').value;
+        localStorage.setItem('caja_'+fecha, JSON.stringify(state));
+        updateUI();
+    }
+
+    function cargarDatos() {
+        const fecha = document.getElementById('fecha').value;
+        const data = localStorage.getItem('caja_'+fecha);
+        if(data) state = JSON.parse(data);
+        else state = { seleccion: {}, acumulado: {}, efec: 0, yape: 0, gastos: [], last: null };
+        
+        productos.forEach(p => {
+            state.seleccion[p.id] = 0;
+            document.getElementById(`q-${p.id}`).innerText = 0;
+        });
+        updateUI();
+    }
+
+    function updateUI() {
+        calcPreview();
+        const rep = document.getElementById('reporte-lista');
+        rep.innerHTML = '';
+        for(const [n, q] of Object.entries(state.acumulado)) {
+            rep.innerHTML += `<div class="row"><span>${n}</span><b>${n==="Adicionales"?'S/ ':'x'}${q}</b></div>`;
+        }
+        
+        const gasUI = document.getElementById('gasto-lista');
+        let totalG = 0;
+        gasUI.innerHTML = '';
+        state.gastos.forEach(g => {
+            gasUI.innerHTML += `• ${g.n}: S/ ${g.m.toFixed(2)}<br>`;
+            totalG += g.m;
+        });
+
+        document.getElementById('res-efec').innerText = `S/ ${state.efec.toFixed(2)}`;
+        document.getElementById('res-yape').innerText = `S/ ${state.yape.toFixed(2)}`;
+        document.getElementById('res-gastos').innerText = `S/ ${totalG.toFixed(2)}`;
+        document.getElementById('res-total').innerText = `TOTAL: S/ ${(state.efec + state.yape - totalG).toFixed(2)}`;
+    }
+
+    function deshacer() {
+        if(!state.last) return;
+        state.last.items.forEach(i => { state.acumulado[i.n] -= i.q; if(state.acumulado[i.n]<=0) delete state.acumulado[i.n]; });
+        if(state.last.met === 'Efectivo') state.efec -= state.last.sub; else state.yape -= state.last.sub;
+        state.last = null;
+        document.getElementById('undo').style.display = 'none';
+        save();
+    }
+
+    init();
+</script>
+</body>
+</html>
