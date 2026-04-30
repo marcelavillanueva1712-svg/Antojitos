@@ -3,69 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caja Digital - Dark Style</title>
+    <title>Antojitos - Control de Ventas</title>
     <style>
         :root {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --accent: #00b894;
-            --yape: #6c5ce7;
-            --text: #e0e0e0;
-            --border: #333;
-            --danger: #ff7675;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --accent: #1abc9c; /* Turquesa */
+            --yape: #9b59b6; /* Morado Yape */
+            --text: #2c3e50;
+            --border: #dcdde1;
+            --danger: #e74c3c; /* Coral/Rojo */
+            --shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
-        .container { max-width: 500px; margin: auto; }
         
-        h2, h3 { color: var(--accent); margin: 10px 0; text-align: center; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra todo el contenido horizontalmente */
+        }
 
-        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .container { 
+            width: 100%;
+            max-width: 450px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        h2, h3 { 
+            color: var(--accent); 
+            margin: 5px 0 15px 0; 
+            text-align: center; 
+            font-weight: 600;
+        }
+
+        .card { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra los elementos dentro de la tarjeta */
+        }
 
         /* Estilo de Platos */
-        .grid-productos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .item-box { background: #252525; border-radius: 12px; padding: 10px; display: flex; align-items: center; border: 1px solid #333; }
-        .info-btn { flex: 1; background: none; border: none; color: white; cursor: pointer; text-align: left; padding: 5px; }
-        .info-btn b { display: block; font-size: 0.9em; }
-        .info-btn span { font-size: 0.75em; color: #888; }
-        .btn-qty { width: 28px; height: 28px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .minus { background: #444; color: white; }
-        .plus { background: var(--accent); color: #121212; }
-        .qty-num { margin: 0 8px; font-weight: bold; min-width: 15px; text-align: center; color: var(--accent); }
+        .grid-productos { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            width: 100%;
+        }
+        
+        .item-box { 
+            background: #fff; 
+            border-radius: 15px; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
 
-        /* Preview del pedido */
-        .preview-bar { background: #2d3436; padding: 12px; border-radius: 10px; margin: 15px 0; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .info-btn { 
+            width: 100%;
+            background: none; 
+            border: none; 
+            color: var(--text); 
+            cursor: pointer; 
+            text-align: center; 
+            padding: 5px; 
+        }
+        .info-btn b { display: block; font-size: 0.95em; color: var(--text); }
+        .info-btn span { font-size: 0.85em; color: var(--accent); font-weight: bold; }
 
-        /* Métodos de pago */
-        .pay-grid { display: flex; gap: 10px; margin-bottom: 15px; }
-        .pay-btn { flex: 1; padding: 12px; border: 1px solid #444; border-radius: 10px; background: #252525; color: white; font-weight: bold; cursor: pointer; }
-        .pay-btn.active.efectivo { border-color: var(--accent); color: var(--accent); background: rgba(0, 184, 148, 0.1); }
-        .pay-btn.active.yape { border-color: var(--yape); color: var(--yape); background: rgba(108, 92, 231, 0.1); }
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            gap: 10px;
+        }
 
-        .btn-main { width: 100%; padding: 18px; background: var(--accent); color: #121212; border: none; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+        .btn-qty { 
+            width: 32px; 
+            height: 32px; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .minus { background: #f1f2f6; color: var(--text); border: 1px solid var(--border); }
+        .plus { background: var(--accent); color: white; }
+        
+        .qty-num { font-weight: bold; min-width: 20px; text-align: center; color: var(--text); }
+
+        /* Preview y Totales */
+        .preview-bar { 
+            width: 100%;
+            background: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            border-bottom: 3px solid var(--accent); 
+            display: flex; 
+            justify-content: space-between; 
+            box-sizing: border-box;
+        }
+
+        .pay-grid { display: flex; gap: 10px; width: 100%; margin-bottom: 15px; }
+        .pay-btn { 
+            flex: 1; padding: 12px; border: 1px solid var(--border); 
+            border-radius: 12px; background: #fff; color: var(--text); 
+            font-weight: bold; cursor: pointer; 
+        }
+        .pay-btn.active.efectivo { border-color: var(--accent); color: var(--accent); background: #e8f8f5; }
+        .pay-btn.active.yape { border-color: var(--yape); color: var(--yape); background: #f4ecf7; }
+
+        .btn-main { 
+            width: 100%; padding: 16px; background: var(--accent); 
+            color: white; border: none; border-radius: 15px; 
+            font-size: 1.1em; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3);
+        }
 
         /* Gastos */
-        .gasto-input { display: flex; gap: 5px; margin-top: 10px; }
-        input { background: #252525; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; }
+        .gasto-input { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        input { 
+            background: #fff; border: 1px solid var(--border); 
+            color: var(--text); padding: 12px; border-radius: 10px; 
+            font-size: 1em;
+        }
 
         /* Resumen */
-        .resumen-scroll { max-height: 250px; overflow-y: auto; font-size: 0.9em; }
-        .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #333; }
-        .total-final { font-size: 1.5em; text-align: right; margin-top: 15px; color: var(--accent); font-weight: bold; }
+        .resumen-scroll { width: 100%; max-height: 250px; overflow-y: auto; }
+        .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f2f6; }
+        .total-final { font-size: 1.6em; text-align: right; width: 100%; margin-top: 15px; color: var(--accent); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <input type="date" id="fecha" style="width: 100%; margin-bottom: 15px;" onchange="cargarDatos()">
+        <h3>Nueva Venta</h3>
+        <input type="date" id="fecha" style="width: 100%; margin-bottom: 20px; box-sizing: border-box;" onchange="cargarDatos()">
         
         <div class="grid-productos" id="platos-ui"></div>
 
-        <button onclick="adicionalPrompt()" style="width:100%; margin-top:10px; background:none; border:1px dashed #555; color:#888; padding:8px; border-radius:8px; cursor:pointer;">+ Agregar Adicional S/</button>
+        <button onclick="adicionalPrompt()" style="width:100%; margin-top:15px; background:none; border:1px dashed var(--accent); color:var(--accent); padding:10px; border-radius:12px; cursor:pointer; font-weight:500;">+ Agregar Adicional (S/)</button>
 
         <div class="preview-bar">
-            <span>Total Pedido:</span>
-            <span id="pedido-total">S/ 0.00</span>
+            <span>Total a cobrar:</span>
+            <span id="pedido-total" style="font-weight: bold; color: var(--accent);">S/ 0.00</span>
         </div>
 
         <div class="pay-grid">
@@ -74,27 +174,28 @@
         </div>
 
         <button class="btn-main" onclick="registrar()">REGISTRAR PEDIDO</button>
-        <button onclick="deshacer()" id="undo" style="display:none; width:100%; margin-top:8px; background:none; border:none; color:var(--danger); cursor:pointer;">↩ Deshacer último error</button>
+        <button onclick="deshacer()" id="undo" style="display:none; width:100%; margin-top:12px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">↩ Corregir último error</button>
     </div>
 
     <div class="card">
-        <h3>Reporte Consolidado</h3>
+        <h3>Reporte del Día</h3>
         <div id="reporte-lista" class="resumen-scroll"></div>
-        <hr style="border: 0.5px solid #333; margin: 15px 0;">
-        <div class="row"><span>Efectivo:</span><span id="res-efec">S/ 0.00</span></div>
-        <div class="row"><span>Yape:</span><span id="res-yape">S/ 0.00</span></div>
-        <div class="row" style="color:var(--danger)"><span>Gastos:</span><span id="res-gastos">S/ 0.00</span></div>
-        <div class="total-final" id="res-total">S/ 0.00</div>
+        <div style="width: 100%; margin-top: 15px;">
+            <div class="row"><span>Efectivo:</span><span id="res-efec">S/ 0.00</span></div>
+            <div class="row"><span>Yape:</span><span id="res-yape">S/ 0.00</span></div>
+            <div class="row" style="color:var(--danger)"><span>Gastos:</span><span id="res-gastos">S/ 0.00</span></div>
+            <div class="total-final" id="res-total">S/ 0.00</div>
+        </div>
     </div>
 
     <div class="card">
-        <h3>Registrar Gasto</h3>
+        <h3>Gastos Detallados</h3>
         <div class="gasto-input">
-            <input type="text" id="g-nombre" placeholder="¿En qué?" style="flex:2">
-            <input type="number" id="g-monto" placeholder="S/" style="flex:1">
-            <button onclick="addGasto()" style="background:var(--danger); border:none; color:white; padding:10px; border-radius:8px; cursor:pointer;">OK</button>
+            <input type="text" id="g-nombre" placeholder="Descripción (ej. Pollo, Gas)">
+            <input type="number" id="g-monto" placeholder="Monto S/">
+            <button onclick="addGasto()" style="background:var(--danger); border:none; color:white; padding:12px; border-radius:12px; cursor:pointer; font-weight:bold;">Guardar Gasto</button>
         </div>
-        <div id="gasto-lista" style="font-size:0.8em; margin-top:10px; color:#888"></div>
+        <div id="gasto-lista" style="width: 100%; font-size:0.9em; margin-top:15px; color:#7f8c8d"></div>
     </div>
 </div>
 
@@ -118,9 +219,11 @@
             ui.innerHTML += `
                 <div class="item-box">
                     <button class="info-btn" onclick="updateQty('${p.id}', 1)"><b>${p.n}</b><span>S/ ${p.p}</span></button>
-                    <button class="btn-qty minus" onclick="updateQty('${p.id}', -1)">-</button>
-                    <span class="qty-num" id="q-${p.id}">0</span>
-                    <button class="btn-qty plus" onclick="updateQty('${p.id}', 1)">+</button>
+                    <div class="controls">
+                        <button class="btn-qty minus" onclick="updateQty('${p.id}', -1)">-</button>
+                        <span class="qty-num" id="q-${p.id}">0</span>
+                        <button class="btn-qty plus" onclick="updateQty('${p.id}', 1)">+</button>
+                    </div>
                 </div>`;
         });
         cargarDatos();
@@ -197,7 +300,8 @@
         
         productos.forEach(p => {
             state.seleccion[p.id] = 0;
-            document.getElementById(`q-${p.id}`).innerText = 0;
+            const qEl = document.getElementById(`q-${p.id}`);
+            if(qEl) qEl.innerText = 0;
         });
         updateUI();
     }
@@ -206,6 +310,7 @@
         calcPreview();
         const rep = document.getElementById('reporte-lista');
         rep.innerHTML = '';
+        if(Object.keys(state.acumulado).length === 0) rep.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">Sin ventas aún</div>';
         for(const [n, q] of Object.entries(state.acumulado)) {
             rep.innerHTML += `<div class="row"><span>${n}</span><b>${n==="Adicionales"?'S/ ':'x'}${q}</b></div>`;
         }
@@ -214,7 +319,7 @@
         let totalG = 0;
         gasUI.innerHTML = '';
         state.gastos.forEach(g => {
-            gasUI.innerHTML += `• ${g.n}: S/ ${g.m.toFixed(2)}<br>`;
+            gasUI.innerHTML += `<div class="row" style="border:none; padding:2px 0;"><span>• ${g.n}</span><span>S/ ${g.m.toFixed(2)}</span></div>`;
             totalG += g.m;
         });
 
