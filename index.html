@@ -8,11 +8,11 @@
         :root {
             --bg: #f4f7f6;
             --card: #ffffff;
-            --accent: #1abc9c; /* Turquesa */
-            --yape: #9b59b6; /* Morado Yape */
+            --accent: #1abc9c;
+            --yape: #9b59b6;
             --text: #2c3e50;
             --border: #dcdde1;
-            --danger: #e74c3c; /* Coral/Rojo */
+            --danger: #e74c3c;
             --shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         
@@ -24,7 +24,7 @@
             padding: 15px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra todo el contenido horizontalmente */
+            align-items: center;
         }
 
         .container { 
@@ -50,10 +50,9 @@
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra los elementos dentro de la tarjeta */
+            align-items: center;
         }
 
-        /* Estilo de Platos */
         .grid-productos { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -69,7 +68,6 @@
             flex-direction: column;
             align-items: center; 
             border: 1px solid var(--border);
-            transition: transform 0.2s;
         }
 
         .info-btn { 
@@ -81,7 +79,7 @@
             text-align: center; 
             padding: 5px; 
         }
-        .info-btn b { display: block; font-size: 0.95em; color: var(--text); }
+        .info-btn b { display: block; font-size: 0.95em; }
         .info-btn span { font-size: 0.85em; color: var(--accent); font-weight: bold; }
 
         .controls {
@@ -107,9 +105,8 @@
         .minus { background: #f1f2f6; color: var(--text); border: 1px solid var(--border); }
         .plus { background: var(--accent); color: white; }
         
-        .qty-num { font-weight: bold; min-width: 20px; text-align: center; color: var(--text); }
+        .qty-num { font-weight: bold; min-width: 20px; text-align: center; }
 
-        /* Preview y Totales */
         .preview-bar { 
             width: 100%;
             background: #f9f9f9; 
@@ -118,9 +115,12 @@
             margin: 15px 0; 
             border-bottom: 3px solid var(--accent); 
             display: flex; 
-            justify-content: space-between; 
+            flex-direction: column;
+            gap: 5px;
             box-sizing: border-box;
         }
+
+        .preview-row { display: flex; justify-content: space-between; width: 100%; }
 
         .pay-grid { display: flex; gap: 10px; width: 100%; margin-bottom: 15px; }
         .pay-btn { 
@@ -138,7 +138,6 @@
             box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3);
         }
 
-        /* Gastos */
         .gasto-input { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         input { 
             background: #fff; border: 1px solid var(--border); 
@@ -146,7 +145,6 @@
             font-size: 1em;
         }
 
-        /* Resumen */
         .resumen-scroll { width: 100%; max-height: 250px; overflow-y: auto; }
         .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f2f6; }
         .total-final { font-size: 1.6em; text-align: right; width: 100%; margin-top: 15px; color: var(--accent); font-weight: bold; }
@@ -161,11 +159,17 @@
         
         <div class="grid-productos" id="platos-ui"></div>
 
-        <button onclick="adicionalPrompt()" style="width:100%; margin-top:15px; background:none; border:1px dashed var(--accent); color:var(--accent); padding:10px; border-radius:12px; cursor:pointer; font-weight:500;">+ Agregar Adicional (S/)</button>
+        <button onclick="adicionalAlPedido()" style="width:100%; margin-top:15px; background:none; border:1px dashed var(--accent); color:var(--accent); padding:10px; border-radius:12px; cursor:pointer; font-weight:500;">+ Agregar Adicional al pedido (S/)</button>
 
         <div class="preview-bar">
-            <span>Total a cobrar:</span>
-            <span id="pedido-total" style="font-weight: bold; color: var(--accent);">S/ 0.00</span>
+            <div class="preview-row" id="linea-adicional" style="display:none; font-size: 0.9em; color: #7f8c8d; margin-bottom: 5px;">
+                <span>Adicional actual:</span>
+                <span id="monto-adicional-temp">S/ 0.00</span>
+            </div>
+            <div class="preview-row">
+                <span>Total a cobrar:</span>
+                <span id="pedido-total" style="font-weight: bold; color: var(--accent);">S/ 0.00</span>
+            </div>
         </div>
 
         <div class="pay-grid">
@@ -177,6 +181,7 @@
         <button onclick="deshacer()" id="undo" style="display:none; width:100%; margin-top:12px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">↩ Corregir último error</button>
     </div>
 
+    <!-- El resto de las tarjetas (Reporte y Gastos) se mantienen igual -->
     <div class="card">
         <h3>Reporte del Día</h3>
         <div id="reporte-lista" class="resumen-scroll"></div>
@@ -191,7 +196,7 @@
     <div class="card">
         <h3>Gastos Detallados</h3>
         <div class="gasto-input">
-            <input type="text" id="g-nombre" placeholder="Descripción (ej. Pollo, Gas)">
+            <input type="text" id="g-nombre" placeholder="Descripción">
             <input type="number" id="g-monto" placeholder="Monto S/">
             <button onclick="addGasto()" style="background:var(--danger); border:none; color:white; padding:12px; border-radius:12px; cursor:pointer; font-weight:bold;">Guardar Gasto</button>
         </div>
@@ -207,6 +212,8 @@
         { id: 'p7', n: "2do Solo 12", p: 12 }, { id: 'p8', n: "Entrada 4", p: 4 }
     ];
 
+    // Adicional temporal para el pedido en curso
+    let adicionalTemporal = 0;
     let state = { seleccion: {}, acumulado: {}, efec: 0, yape: 0, gastos: [], last: null };
     let metodoActual = 'Efectivo';
 
@@ -235,10 +242,22 @@
         calcPreview();
     }
 
+    // Nueva función para sumar adicionales al pedido actual
+    function adicionalAlPedido() {
+        const m = parseFloat(prompt("Monto del adicional para este pedido:"));
+        if(!isNaN(m) && m > 0) {
+            adicionalTemporal += m;
+            document.getElementById('linea-adicional').style.display = 'flex';
+            document.getElementById('monto-adicional-temp').innerText = `S/ ${adicionalTemporal.toFixed(2)}`;
+            calcPreview();
+        }
+    }
+
     function calcPreview() {
-        let total = 0;
-        productos.forEach(p => total += state.seleccion[p.id] * p.p);
-        document.getElementById('pedido-total').innerText = `S/ ${total.toFixed(2)}`;
+        let subtotalPlatos = 0;
+        productos.forEach(p => subtotalPlatos += state.seleccion[p.id] * p.p);
+        let totalFinal = subtotalPlatos + adicionalTemporal;
+        document.getElementById('pedido-total').innerText = `S/ ${totalFinal.toFixed(2)}`;
     }
 
     function setMetodo(m) {
@@ -249,30 +268,40 @@
 
     function registrar() {
         let pedidoItems = [];
-        let subtotal = 0;
+        let subtotalPedido = 0;
+        
+        // Procesar platos
         productos.forEach(p => {
             if(state.seleccion[p.id] > 0) {
                 pedidoItems.push({ n: p.n, q: state.seleccion[p.id], p: p.p });
-                subtotal += state.seleccion[p.id] * p.p;
+                subtotalPedido += state.seleccion[p.id] * p.p;
                 state.acumulado[p.n] = (state.acumulado[p.n] || 0) + state.seleccion[p.id];
-                state.seleccion[p.id] = 0; document.getElementById(`q-${p.id}`).innerText = 0;
+                state.seleccion[p.id] = 0; 
+                document.getElementById(`q-${p.id}`).innerText = 0;
             }
         });
-        if(pedidoItems.length === 0) return;
+
+        // Solo registrar si hay platos o adicionales
+        if(pedidoItems.length === 0 && adicionalTemporal === 0) return;
+
+        // Procesar adicional si existe
+        if(adicionalTemporal > 0) {
+            state.acumulado["Adicionales"] = (state.acumulado["Adicionales"] || 0) + adicionalTemporal;
+            subtotalPedido += adicionalTemporal;
+        }
+
+        // Sumar a la caja según método
+        if(metodoActual === 'Efectivo') state.efec += subtotalPedido; 
+        else state.yape += subtotalPedido;
+
+        // Guardar para deshacer (incluyendo el adicional)
+        state.last = { items: pedidoItems, sub: subtotalPedido, met: metodoActual, adi: adicionalTemporal };
         
-        if(metodoActual === 'Efectivo') state.efec += subtotal; else state.yape += subtotal;
-        state.last = { items: pedidoItems, sub: subtotal, met: metodoActual };
+        // Limpiar pedido actual
+        adicionalTemporal = 0;
+        document.getElementById('linea-adicional').style.display = 'none';
         document.getElementById('undo').style.display = 'block';
         save();
-    }
-
-    function adicionalPrompt() {
-        const m = parseFloat(prompt("Monto del adicional:"));
-        if(!isNaN(m)) {
-            if(metodoActual === 'Efectivo') state.efec += m; else state.yape += m;
-            state.acumulado["Adicionales"] = (state.acumulado["Adicionales"] || 0) + m;
-            save();
-        }
     }
 
     function addGasto() {
@@ -331,8 +360,20 @@
 
     function deshacer() {
         if(!state.last) return;
-        state.last.items.forEach(i => { state.acumulado[i.n] -= i.q; if(state.acumulado[i.n]<=0) delete state.acumulado[i.n]; });
-        if(state.last.met === 'Efectivo') state.efec -= state.last.sub; else state.yape -= state.last.sub;
+        // Restar platos
+        state.last.items.forEach(i => { 
+            state.acumulado[i.n] -= i.q; 
+            if(state.acumulado[i.n]<=0) delete state.acumulado[i.n]; 
+        });
+        // Restar adicional del acumulado si hubo
+        if(state.last.adi > 0) {
+            state.acumulado["Adicionales"] -= state.last.adi;
+            if(state.acumulado["Adicionales"] <= 0) delete state.acumulado["Adicionales"];
+        }
+        // Restar dinero de caja
+        if(state.last.met === 'Efectivo') state.efec -= state.last.sub; 
+        else state.yape -= state.last.sub;
+        
         state.last = null;
         document.getElementById('undo').style.display = 'none';
         save();
