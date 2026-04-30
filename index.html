@@ -146,8 +146,13 @@
         }
 
         .resumen-scroll { width: 100%; max-height: 250px; overflow-y: auto; }
-        .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f2f6; }
-        .total-final { font-size: 1.6em; text-align: right; width: 100%; margin-top: 15px; color: var(--accent); font-weight: bold; }
+        .row-clean { display: flex; justify-content: space-between; padding: 5px 0; border: none; }
+        .detalle-gastos-reporte { font-size: 0.85em; color: #7f8c8d; padding-left: 10px; margin-bottom: 10px; }
+        .total-final { font-size: 1.6em; text-align: right; width: 100%; margin-top: 15px; color: var(--accent); font-weight: bold; border-top: 2px solid var(--accent); padding-top: 10px; }
+        
+        /* Estilos para borrar gasto */
+        .delete-btn { color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.1em; padding: 0 5px; }
+        .gasto-item { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -181,14 +186,14 @@
         <button onclick="deshacer()" id="undo" style="display:none; width:100%; margin-top:12px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">↩ Corregir último error</button>
     </div>
 
-    <!-- El resto de las tarjetas (Reporte y Gastos) se mantienen igual -->
     <div class="card">
         <h3>Reporte del Día</h3>
         <div id="reporte-lista" class="resumen-scroll"></div>
         <div style="width: 100%; margin-top: 15px;">
-            <div class="row"><span>Efectivo:</span><span id="res-efec">S/ 0.00</span></div>
-            <div class="row"><span>Yape:</span><span id="res-yape">S/ 0.00</span></div>
-            <div class="row" style="color:var(--danger)"><span>Gastos:</span><span id="res-gastos">S/ 0.00</span></div>
+            <div class="row-clean"><span>Efectivo:</span><span id="res-efec">S/ 0.00</span></div>
+            <div class="row-clean"><span>Yape:</span><span id="res-yape">S/ 0.00</span></div>
+            <div class="row-clean" style="color:var(--danger); font-weight: bold;"><span>Gastos:</span><span id="res-gastos">S/ 0.00</span></div>
+            <div id="reporte-gastos-detalle" class="detalle-gastos-reporte"></div>
             <div class="total-final" id="res-total">S/ 0.00</div>
         </div>
     </div>
@@ -200,7 +205,7 @@
             <input type="number" id="g-monto" placeholder="Monto S/">
             <button onclick="addGasto()" style="background:var(--danger); border:none; color:white; padding:12px; border-radius:12px; cursor:pointer; font-weight:bold;">Guardar Gasto</button>
         </div>
-        <div id="gasto-lista" style="width: 100%; font-size:0.9em; margin-top:15px; color:#7f8c8d"></div>
+        <div id="gasto-lista-simple" style="width: 100%; font-size:0.9em; margin-top:15px; color:#7f8c8d"></div>
     </div>
 </div>
 
@@ -212,7 +217,6 @@
         { id: 'p7', n: "2do Solo 12", p: 12 }, { id: 'p8', n: "Entrada 4", p: 4 }
     ];
 
-    // Adicional temporal para el pedido en curso
     let adicionalTemporal = 0;
     let state = { seleccion: {}, acumulado: {}, efec: 0, yape: 0, gastos: [], last: null };
     let metodoActual = 'Efectivo';
@@ -221,6 +225,7 @@
 
     function init() {
         const ui = document.getElementById('platos-ui');
+        ui.innerHTML = '';
         productos.forEach(p => {
             state.seleccion[p.id] = 0;
             ui.innerHTML += `
@@ -242,7 +247,6 @@
         calcPreview();
     }
 
-    // Nueva función para sumar adicionales al pedido actual
     function adicionalAlPedido() {
         const m = parseFloat(prompt("Monto del adicional para este pedido:"));
         if(!isNaN(m) && m > 0) {
@@ -255,7 +259,7 @@
 
     function calcPreview() {
         let subtotalPlatos = 0;
-        productos.forEach(p => subtotalPlatos += state.seleccion[p.id] * p.p);
+        productos.forEach(p => subtotalPlatos += (state.seleccion[p.id] || 0) * p.p);
         let totalFinal = subtotalPlatos + adicionalTemporal;
         document.getElementById('pedido-total').innerText = `S/ ${totalFinal.toFixed(2)}`;
     }
@@ -270,7 +274,6 @@
         let pedidoItems = [];
         let subtotalPedido = 0;
         
-        // Procesar platos
         productos.forEach(p => {
             if(state.seleccion[p.id] > 0) {
                 pedidoItems.push({ n: p.n, q: state.seleccion[p.id], p: p.p });
@@ -281,23 +284,18 @@
             }
         });
 
-        // Solo registrar si hay platos o adicionales
         if(pedidoItems.length === 0 && adicionalTemporal === 0) return;
 
-        // Procesar adicional si existe
         if(adicionalTemporal > 0) {
             state.acumulado["Adicionales"] = (state.acumulado["Adicionales"] || 0) + adicionalTemporal;
             subtotalPedido += adicionalTemporal;
         }
 
-        // Sumar a la caja según método
         if(metodoActual === 'Efectivo') state.efec += subtotalPedido; 
         else state.yape += subtotalPedido;
 
-        // Guardar para deshacer (incluyendo el adicional)
         state.last = { items: pedidoItems, sub: subtotalPedido, met: metodoActual, adi: adicionalTemporal };
         
-        // Limpiar pedido actual
         adicionalTemporal = 0;
         document.getElementById('linea-adicional').style.display = 'none';
         document.getElementById('undo').style.display = 'block';
@@ -308,9 +306,16 @@
         const n = document.getElementById('g-nombre').value;
         const m = parseFloat(document.getElementById('g-monto').value);
         if(n && m) {
-            state.gastos.push({ n, m });
+            state.gastos.push({ id: Date.now(), n, m });
             document.getElementById('g-nombre').value = '';
             document.getElementById('g-monto').value = '';
+            save();
+        }
+    }
+
+    function removeGasto(id) {
+        if(confirm("¿Seguro que deseas borrar este gasto?")) {
+            state.gastos = state.gastos.filter(g => g.id !== id);
             save();
         }
     }
@@ -339,17 +344,32 @@
         calcPreview();
         const rep = document.getElementById('reporte-lista');
         rep.innerHTML = '';
-        if(Object.keys(state.acumulado).length === 0) rep.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">Sin ventas aún</div>';
-        for(const [n, q] of Object.entries(state.acumulado)) {
-            rep.innerHTML += `<div class="row"><span>${n}</span><b>${n==="Adicionales"?'S/ ':'x'}${q}</b></div>`;
+        if(Object.keys(state.acumulado).length === 0) {
+            rep.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">Sin ventas aún</div>';
         }
         
-        const gasUI = document.getElementById('gasto-lista');
+        for(const [n, q] of Object.entries(state.acumulado)) {
+            rep.innerHTML += `<div class="row-clean"><span>${n}</span><b>${n==="Adicionales"?'S/ ':'x'}${q}</b></div>`;
+        }
+        
+        const repGastosDetalle = document.getElementById('reporte-gastos-detalle');
+        const listSimple = document.getElementById('gasto-lista-simple');
         let totalG = 0;
-        gasUI.innerHTML = '';
+        
+        repGastosDetalle.innerHTML = '';
+        listSimple.innerHTML = '';
+
         state.gastos.forEach(g => {
-            gasUI.innerHTML += `<div class="row" style="border:none; padding:2px 0;"><span>• ${g.n}</span><span>S/ ${g.m.toFixed(2)}</span></div>`;
             totalG += g.m;
+            // Detalle en el reporte (sin botón borrar para que sea limpio)
+            repGastosDetalle.innerHTML += `<div style="display:flex; justify-content:space-between; width:100%;"><span>• ${g.n}</span><span>S/ ${g.m.toFixed(2)}</span></div>`;
+            
+            // Detalle en la sección de gastos (con botón borrar)
+            listSimple.innerHTML += `
+                <div class="gasto-item">
+                    <span>• ${g.n} (S/ ${g.m.toFixed(2)})</span>
+                    <button class="delete-btn" onclick="removeGasto(${g.id})">🗑️</button>
+                </div>`;
         });
 
         document.getElementById('res-efec').innerText = `S/ ${state.efec.toFixed(2)}`;
@@ -360,17 +380,14 @@
 
     function deshacer() {
         if(!state.last) return;
-        // Restar platos
         state.last.items.forEach(i => { 
             state.acumulado[i.n] -= i.q; 
             if(state.acumulado[i.n]<=0) delete state.acumulado[i.n]; 
         });
-        // Restar adicional del acumulado si hubo
         if(state.last.adi > 0) {
             state.acumulado["Adicionales"] -= state.last.adi;
             if(state.acumulado["Adicionales"] <= 0) delete state.acumulado["Adicionales"];
         }
-        // Restar dinero de caja
         if(state.last.met === 'Efectivo') state.efec -= state.last.sub; 
         else state.yape -= state.last.sub;
         
